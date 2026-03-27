@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('list_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('list_id')->constrained('task_lists')->cascadeOnDelete();
             $table->string('task');
+            $table->text('description')->nullable();
             $table->enum('priority', ['Low', 'Medium', 'High'])->default('Medium');
             $table->tinyInteger('status')->default(0); // 0,1,2
             $table->date('due_date')->nullable();

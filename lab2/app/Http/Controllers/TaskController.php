@@ -68,7 +68,7 @@ class TaskController extends Controller
             'list_id' => 'required|exists:task_lists,id'
         ]);
 
-        Task::create($validated + ['status' => 0]);
+        Task::create($validated + ['status' => 0,  'timestamp' => now(),]);
 
         return redirect()->route('tasks.index')->with('success', 'Task created!');
     }
