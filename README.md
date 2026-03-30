@@ -1,129 +1,143 @@
-# heyToday! ✦ — Task Management App
+
+---
+
+# ✦ heyToday! — Task Management App
+
 ### CMSC 129 Laboratory Assignment 2
 
 > *Stay focused, get it done.*
 
-A full-stack task management web application built with the **MVC (Model-View-Controller)** architectural pattern using the **Laravel** PHP framework and **PostgreSQL** database.
+A full-stack task management web application built using the **MVC (Model-View-Controller)** architecture with the **Laravel** framework and **PostgreSQL** database.
 
 ---
 
-## 📋 Application Description
+## 📋 Overview
 
-**heyToday!** is a productivity-focused task manager that lets users organize tasks into multiple lists, track progress, and manage their workflow efficiently. It features a clean dark-themed dashboard with real-time task status tracking, priority levels, due dates, and soft-delete (archive) functionality.
+**heyToday!** is a productivity-focused task manager that helps users organize tasks into multiple lists, monitor progress, and manage workflows efficiently.
+
+It features a **clean dark-themed dashboard**, real-time task tracking, priority levels, due dates, and **soft-delete (archive)** functionality.
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Laravel 13 (PHP 8.3) |
-| Database | PostgreSQL |
-| ORM | Eloquent |
-| Views | Blade Templating Engine |
-| Styling | Tailwind CSS (CDN) |
-| Build Tool | Vite + Node.js |
-| Version Control | Git + GitHub |
+| Layer           | Technology              |
+| --------------- | ----------------------- |
+| Framework       | Laravel 13 (PHP 8.3)    |
+| Database        | PostgreSQL              |
+| ORM             | Eloquent                |
+| Views           | Blade Templating Engine |
+| Styling         | Tailwind CSS (CDN)      |
+| Build Tool      | Vite + Node.js          |
+| Version Control | Git + GitHub            |
 
 ---
 
-## 🏗️ MVC Architecture
+## 🏗️ Project Structure (MVC)
 
 ```
 lab2/
 ├── app/
-│   ├── Http/
-│   │   └── Controllers/
-│   │       ├── TaskController.php       # Handles all task CRUD operations
-│   │       └── TaskListController.php   # Handles list creation and deletion
+│   ├── Http/Controllers/
+│   │   ├── TaskController.php
+│   │   └── TaskListController.php
 │   └── Models/
-│       ├── Task.php                     # Task model with SoftDeletes, belongs to TaskList
-│       └── TaskList.php                 # TaskList model, has many Tasks
-├── database/
-│   └── migrations/
-│       ├── ..._create_task_lists_table.php   # task_lists schema
-│       └── ..._create_tasks_table.php        # tasks schema (with soft deletes)
-├── resources/
-│   └── views/
-│       ├── layouts/
-│       │   └── app.blade.php            # Master layout (sidebar + topbar)
-│       └── tasks/
-│           ├── index.blade.php          # Main dashboard view
-│           └── _card.blade.php          # Reusable task card component
-└── routes/
-    └── web.php                          # All application routes
+│       ├── Task.php
+│       └── TaskList.php
+├── database/migrations/
+│   ├── ..._create_task_lists_table.php
+│   └── ..._create_tasks_table.php
+├── resources/views/
+│   ├── layouts/app.blade.php
+│   └── tasks/
+│       ├── index.blade.php
+│       └── _card.blade.php
+└── routes/web.php
 ```
 
-### How MVC Works in This Project
+---
 
-- **Models** (`Task`, `TaskList`) — Define database structure, relationships, and handle all data operations via Eloquent ORM. `Task` uses `SoftDeletes` for archive functionality.
-- **Views** (Blade templates) — Display data to the user. The master layout (`layouts/app.blade.php`) contains the sidebar and shared UI. Individual views use `@extends` and `@section` to inject content.
-- **Controllers** (`TaskController`, `TaskListController`) — Receive HTTP requests from routes, interact with Models to fetch/modify data, and return Views. No business logic in views, no HTML in controllers.
+## 🔁 MVC Architecture Explained
+
+* **Models** (`Task`, `TaskList`)
+  Handle database structure, relationships, and data operations using Eloquent ORM.
+  `Task` implements **SoftDeletes** for archiving.
+
+* **Views** (Blade Templates)
+  Responsible for UI rendering.
+  Uses a master layout (`layouts/app.blade.php`) with reusable sections.
+
+* **Controllers** (`TaskController`, `TaskListController`)
+  Process HTTP requests, interact with models, and return views.
+  Maintains separation of concerns (no business logic in views).
 
 ---
 
 ## 🗄️ Database Schema
 
-### `task_lists` table
-| Column | Type | Description |
-|--------|------|-------------|
-| id | bigint | Primary key |
-| name | string | List name |
-| created_at | timestamp | Auto |
-| updated_at | timestamp | Auto |
+### `task_lists`
 
-### `tasks` table
-| Column | Type | Description |
-|--------|------|-------------|
-| id | bigint | Primary key |
-| list_id | foreign key | References task_lists |
-| task | string | Task name |
-| description | text (nullable) | Task description |
-| priority | enum | Low / Medium / High |
-| status | tinyint | 0=Not Started, 1=In Progress, 2=Completed |
-| due_date | date (nullable) | Due date |
-| deleted_at | timestamp (nullable) | Soft delete timestamp |
-| created_at | timestamp | Auto |
-| updated_at | timestamp | Auto |
+| Column     | Type      | Description |
+| ---------- | --------- | ----------- |
+| id         | bigint    | Primary key |
+| name       | string    | List name   |
+| created_at | timestamp | Auto        |
+| updated_at | timestamp | Auto        |
+
+### `tasks`
+
+| Column      | Type            | Description                                     |
+| ----------- | --------------- | ----------------------------------------------- |
+| id          | bigint          | Primary key                                     |
+| list_id     | foreign key     | References `task_lists`                         |
+| task        | string          | Task name                                       |
+| description | text (nullable) | Task details                                    |
+| priority    | enum            | Low / Medium / High                             |
+| status      | tinyint         | 0 = Not Started, 1 = In Progress, 2 = Completed |
+| due_date    | date (nullable) | Due date                                        |
+| deleted_at  | timestamp       | Soft delete (archive)                           |
+| created_at  | timestamp       | Auto                                            |
+| updated_at  | timestamp       | Auto                                            |
 
 ---
 
 ## 🚀 Installation & Setup
 
 ### Prerequisites
-- PHP 8.5+
-- Composer
-- Node.js & npm
-- PostgreSQL
-- Git
+
+* PHP 8.5+
+* Composer
+* Node.js & npm
+* PostgreSQL
+* Git
 
 ### Steps
 
-**1. Clone the repository**
+#### 1. Clone the Repository
+
 ```bash
 git clone https://github.com/hungrychef-bytescode/CMSC129-Lab2-JaniolaAM_VerdeM.git
 cd CMSC129-Lab2-JaniolaAM_VerdeM/lab2
 ```
 
-**2. Install PHP dependencies**
+#### 2. Install Dependencies
+
 ```bash
 composer install
-```
-
-**3. Install Node dependencies**
-```bash
 npm install
 ```
 
-**4. Set up environment file**
+#### 3. Environment Setup
+
 ```bash
 cp .env.example .env
 php artisan key:generate
 ```
 
-**5. Configure your database**
+#### 4. Configure Database
 
-Edit `.env` and set your PostgreSQL credentials:
+Update `.env` with your PostgreSQL credentials:
+
 ```env
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
@@ -133,14 +147,14 @@ DB_USERNAME=postgres
 DB_PASSWORD=your_password
 ```
 
-**6. Run database migrations**
+#### 5. Run Migrations
+
 ```bash
 php artisan migrate
 ```
 
-**7. Start the development server**
+#### 6. Start Development Servers
 
-In two separate terminals:
 ```bash
 # Terminal 1
 php artisan serve
@@ -149,55 +163,64 @@ php artisan serve
 npm run dev
 ```
 
-**8. Visit the app**
+#### 7. Access the App
+
 ```
 http://localhost:8000
 ```
 
 ---
-## Screenshots of Application
-<img width="1919" height="870" alt="image" src="https://github.com/user-attachments/assets/42f449f2-bf46-4cfa-ac87-6da25993fc5b" />
-<img width="1919" height="862" alt="image" src="https://github.com/user-attachments/assets/d8e4ec8f-1d9d-4958-b8d1-a9c0f51ab42f" />
 
+## 📸 Screenshots
 
----
-## List of Features Implemented
----
-| Feature | Status |
-|---|---|
-| **Create** tasks with name, priority, due date | ✅ Done |
-| **Read** tasks (list view with active/completed/archived sections) | ✅ Done |
-| **Update** tasks (edit name, priority, status, due date) | ✅ Done |
-| **Delete** tasks (soft delete to archive) | ✅ Done |
-| Validation on store and update | ✅ Done |
-| **Soft delete** (archive tasks) | ✅ Done |
-| **Restore** archived tasks | ✅ Done |
-| **Force/permanent delete** from archive | ✅ Done |
-| **Search** tasks by name or priority | ✅ Done |
-| **Filter** by status and priority | ✅ Done |
-| **Sort** by created date, due date, or priority (asc/desc) | ✅ Done |
-| **Database relationship** — Task belongs to TaskList (hasMany / belongsTo) | ✅ Done |
-| **Task Lists** — create and delete lists from sidebar | ✅ Done |
-| Task status dashboard (% completed / in progress / not started) | ✅ Done |
-| Pagination (10 tasks per page, query string preserved) | ✅ Done |
+<img width="1919" height="870" src="https://github.com/user-attachments/assets/42f449f2-bf46-4cfa-ac87-6da25993fc5b" />
+<img width="1919" height="862" src="https://github.com/user-attachments/assets/d8e4ec8f-1d9d-4958-b8d1-a9c0f51ab42f" />
 
 ---
 
-**Two things still need attention before the demo: switching to PostgreSQL and writing the README.**
+## ✨ Features
 
+| Feature                                      | Status |
+| -------------------------------------------- | ------ |
+| Create tasks (name, priority, due date)      | ✅      |
+| View tasks (active, completed, archived)     | ✅      |
+| Update tasks                                 | ✅      |
+| Soft delete (archive)                        | ✅      |
+| Restore archived tasks                       | ✅      |
+| Permanent delete                             | ✅      |
+| Validation (store & update)                  | ✅      |
+| Search tasks                                 | ✅      |
+| Filter by status/priority                    | ✅      |
+| Sort tasks (date, priority)                  | ✅      |
+| Task-list relationship (hasMany / belongsTo) | ✅      |
+| Task Lists (create/delete)                   | ✅      |
+| Task progress dashboard                      | ✅      |
+| Pagination (10 per page)                     | ✅      |
 
 ---
+
+## ⚠️ Notes
+
+* PostgreSQL configuration must be completed before running migrations.
+* README finalized for project documentation and submission.
+
+---
+
 ## 👥 Contributors
 
-| Name | Role |
-|------|------|
-| Verde, M | Backend (Models, Controllers, Database, Routes) |
-| Janiola, AM | Frontend (Blade Views, UI/UX Design) |
+| Name        | Role                                            |
+| ----------- | ----------------------------------------------- |
+| Verde, M    | Backend (Models, Controllers, Database, Routes) |
+| Janiola, AM | Frontend (Blade Views, UI/UX Design)            |
 
 ---
 
 ## 📚 References
-- [Laravel Documentation](https://laravel.com/docs)
-- [Eloquent ORM](https://laravel.com/docs/eloquent)
-- [Blade Templates](https://laravel.com/docs/blade)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+
+* Laravel Documentation
+* Eloquent ORM
+* Blade Templates
+* PostgreSQL Documentation
+
+---
+
