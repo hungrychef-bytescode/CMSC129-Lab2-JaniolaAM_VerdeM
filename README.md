@@ -156,7 +156,8 @@ http://localhost:8000
 
 ---
 ## 👥 Screenshot of Project
-<img width="1917" height="878" alt="image" src="https://github.com/user-attachments/assets/8e3ba72b-4cb7-400f-a710-07f1b32896de" />
+<img width="1919" height="870" alt="image" src="https://github.com/user-attachments/assets/42f449f2-bf46-4cfa-ac87-6da25993fc5b" />
+
 
 ---
 ## 👥 Contributors
