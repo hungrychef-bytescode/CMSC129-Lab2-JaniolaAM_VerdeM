@@ -18,6 +18,8 @@ Route::patch('tasks/{id}/status', [TaskController::class, 'updateStatus'])->name
 
 
 Route::post('tasks', [TaskController::class, 'store'])->name('tasks.store');
+Route::get('tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
+Route::patch('tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
 Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 
 Route::patch('tasks/{id}/restore', [TaskController::class, 'restore'])->name('tasks.restore');

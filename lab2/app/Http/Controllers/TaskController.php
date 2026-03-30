@@ -73,15 +73,13 @@ class TaskController extends Controller
         return redirect()->route('tasks.index')->with('success', 'Task created!');
     }
 
-    public function edit($id)
+    public function edit(Task $task)
     {
-        $task = Task::findOrFail($id);
         $lists = TaskList::all();
-
         return view('tasks.edit', compact('task', 'lists'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Task $task)
     {
         $validated = $request->validate([
             'task' => 'required|string|max:255',
@@ -90,9 +88,9 @@ class TaskController extends Controller
             'status' => 'required|integer|min:0|max:2'
         ]);
 
-        Task::findOrFail($id)->update($validated);
+        $task->update($validated);
 
-        return back()->with('success', 'Task updated!');
+        return redirect()->route('tasks.index', ['list_id' => $task->list_id])->with('success', 'Task updated!');
     }
 
     public function updateStatus(Request $request, $id)

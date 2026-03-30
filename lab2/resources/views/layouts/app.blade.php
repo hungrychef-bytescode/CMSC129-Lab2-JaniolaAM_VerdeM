@@ -174,7 +174,10 @@
             <!-- Global Search -->
             <form method="GET" class="flex gap-2">
                 <input type="hidden" name="list_id" value="{{ request('list_id') }}">
+                @if(request('sort')) <input type="hidden" name="sort" value="{{ request('sort') }}"> @endif
+                @if(request('order')) <input type="hidden" name="order" value="{{ request('order') }}"> @endif
                 <input type="text" name="search" placeholder="Search tasks..." value="{{ request('search') }}" class="text-sm" style="width:200px">
+                <button type="submit" class="btn-yellow text-xs px-3">🔍</button>
             </form>
             @php $activeCount = \App\Models\Task::where('list_id', request('list_id'))->where('status','!=',2)->whereNull('deleted_at')->count(); @endphp
             <span class="active-tasks-indicator">● {{ $activeCount }} active tasks</span>
@@ -191,13 +194,7 @@
 
     <!-- Alerts -->
     @if(session('success'))
-        <div class="alert-success" id="success-alert">✓ {{ session('success') }}</div>
-            <script>
-                setTimeout(() => {
-                    const alert = document.getElementById('success-alert');
-                    if (alert) alert.style.display = 'none';
-                }, 3000);
-            </script>
+        <div class="alert-success">✓ {{ session('success') }}</div>
     @endif
 
     @yield('content')

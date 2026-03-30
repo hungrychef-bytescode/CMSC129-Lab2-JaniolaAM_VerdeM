@@ -11,13 +11,29 @@
 
 @php
     $listId = request('list_id');
-    $allTasks = \App\Models\Task::where('list_id', $listId)->withTrashed()->get();
-    $activeTasks = \App\Models\Task::where('list_id', $listId)->where('status', '!=', 2)->whereNull('deleted_at')->get();
-    $completedTasks = \App\Models\Task::where('list_id', $listId)->where('status', 2)->whereNull('deleted_at')->get();
+    $search = request('search');
+    $sort = in_array(request('sort'), ['created_at', 'due_date', 'priority']) ? request('sort') : 'created_at';
+    $order = request('order', 'asc') === 'desc' ? 'desc' : 'asc';
+
+    $baseQuery = fn() => \App\Models\Task::where('list_id', $listId)
+        ->when($search, fn($q) => $q->where('task', 'like', "%{$search}%"));
+
+    $activeTasks = $baseQuery()
+        ->where('status', '!=', 2)
+        ->whereNull('deleted_at')
+        ->orderBy($sort, $order)
+        ->get();
+
+    $completedTasks = $baseQuery()
+        ->where('status', 2)
+        ->whereNull('deleted_at')
+        ->orderBy($sort, $order)
+        ->get();
+
     $archivedTasks = \App\Models\Task::where('list_id', $listId)->onlyTrashed()->get();
 
     $total = \App\Models\Task::where('list_id', $listId)->whereNull('deleted_at')->count();
-    $completedCount = $completedTasks->count();
+    $completedCount = \App\Models\Task::where('list_id', $listId)->where('status', 2)->whereNull('deleted_at')->count();
     $inProgressCount = \App\Models\Task::where('list_id', $listId)->where('status', 1)->whereNull('deleted_at')->count();
     $notStartedCount = \App\Models\Task::where('list_id', $listId)->where('status', 0)->whereNull('deleted_at')->count();
 
@@ -62,6 +78,9 @@
         <!-- Filters -->
         <form method="GET" class="flex gap-2 mb-3 flex-wrap">
             <input type="hidden" name="list_id" value="{{ $listId }}">
+            @if(request('search'))
+                <input type="hidden" name="search" value="{{ request('search') }}">
+            @endif
             <select name="sort" class="text-xs">
                 <option value="created_at" {{ request('sort') == 'created_at' ? 'selected' : '' }}>Created</option>
                 <option value="due_date" {{ request('sort') == 'due_date' ? 'selected' : '' }}>Due Date</option>
@@ -71,10 +90,6 @@
                 <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>Ascending</option>
                 <option value="desc" {{ request('order') == 'desc' ? 'selected' : '' }}>Descending</option>
             </select>
-            <label class="flex items-center gap-1 text-xs text-slate-400 cursor-pointer">
-                <input type="checkbox" name="show_archived" value="1" {{ request('show_archived') ? 'checked' : '' }} onchange="this.form.submit()" class="accent-green-400">
-                Show Archived
-            </label>
             <button type="submit" class="text-xs text-slate-400 hover:text-white">Apply</button>
         </form>
 
@@ -95,6 +110,11 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-1 ml-2">
+                    <!-- Edit -->
+                    <a href="{{ route('tasks.edit', $task) }}"
+                       class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded" style="background:#1e2d3d;">
+                        ✏ Edit
+                    </a>
                     <!-- Next Status -->
                     @if($task->status < 2)
                     <form method="POST" action="{{ route('tasks.status', $task->id) }}">
