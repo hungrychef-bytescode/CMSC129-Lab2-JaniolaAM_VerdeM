@@ -155,8 +155,35 @@ http://localhost:8000
 ```
 
 ---
-## 👥 Screenshot of Project
+## Screenshots of Application
 <img width="1919" height="870" alt="image" src="https://github.com/user-attachments/assets/42f449f2-bf46-4cfa-ac87-6da25993fc5b" />
+<img width="1919" height="862" alt="image" src="https://github.com/user-attachments/assets/d8e4ec8f-1d9d-4958-b8d1-a9c0f51ab42f" />
+
+
+---
+## List of Features Implemented
+---
+| Feature | Status |
+|---|---|
+| **Create** tasks with name, priority, due date | ✅ Done |
+| **Read** tasks (list view with active/completed/archived sections) | ✅ Done |
+| **Update** tasks (edit name, priority, status, due date) | ✅ Done |
+| **Delete** tasks (soft delete to archive) | ✅ Done |
+| Validation on store and update | ✅ Done |
+| **Soft delete** (archive tasks) | ✅ Done |
+| **Restore** archived tasks | ✅ Done |
+| **Force/permanent delete** from archive | ✅ Done |
+| **Search** tasks by name or priority | ✅ Done |
+| **Filter** by status and priority | ✅ Done |
+| **Sort** by created date, due date, or priority (asc/desc) | ✅ Done |
+| **Database relationship** — Task belongs to TaskList (hasMany / belongsTo) | ✅ Done |
+| **Task Lists** — create and delete lists from sidebar | ✅ Done |
+| Task status dashboard (% completed / in progress / not started) | ✅ Done |
+| Pagination (10 tasks per page, query string preserved) | ✅ Done |
+
+---
+
+**Two things still need attention before the demo: switching to PostgreSQL and writing the README.**
 
 
 ---
