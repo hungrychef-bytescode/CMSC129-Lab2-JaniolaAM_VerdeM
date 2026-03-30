@@ -155,7 +155,10 @@ http://localhost:8000
 ```
 
 ---
+## 👥 Screenshot of Project
+<img width="1917" height="878" alt="image" src="https://github.com/user-attachments/assets/8e3ba72b-4cb7-400f-a710-07f1b32896de" />
 
+---
 ## 👥 Contributors
 
 | Name | Role |
