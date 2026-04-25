@@ -27,3 +27,4 @@ Route::delete('tasks/{id}/force', [TaskController::class, 'forceDelete'])->name(
 
 Route::post('lists', [TaskListController::class, 'store'])->name('lists.store');
 Route::delete('lists/{list}', [TaskListController::class, 'destroy'])->name('lists.destroy');
+Route::post('/chat', [App\Http\Controllers\ChatController::class, 'chat'])->name('chat');
