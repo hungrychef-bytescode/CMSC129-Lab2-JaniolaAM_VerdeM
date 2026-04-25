@@ -301,12 +301,143 @@
 </main>
 
 <!-- ===== CHAT WIDGET ===== -->
+<style>
+    #chat-toggle {
+        position: fixed;
+        bottom: 28px; right: 28px;
+        z-index: 1000;
+        width: 64px; height: 64px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #eab308, #f59e0b);
+        color: #000;
+        border: 3px solid #fde68a;
+        cursor: grab;
+        font-size: 28px;
+        box-shadow: 0 6px 24px rgba(234,179,8,0.5), 0 2px 8px rgba(0,0,0,0.4);
+        display: flex; align-items: center; justify-content: center;
+        transition: box-shadow 0.2s, transform 0.2s;
+        user-select: none;
+    }
+    #chat-toggle:hover {
+        box-shadow: 0 8px 32px rgba(234,179,8,0.7), 0 2px 8px rgba(0,0,0,0.4);
+        transform: scale(1.08);
+    }
+    #chat-toggle:active { cursor: grabbing; }
+
+    #chat-window {
+        position: fixed;
+        bottom: 104px; right: 28px;
+        z-index: 999;
+        width: 360px;
+        height: 500px;
+        background-color: #141f2e;
+        border: 1px solid #2d3d50;
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+        overflow: hidden;
+        transition: height 0.2s;
+        resize: both;
+    }
+    #chat-window.hidden { display: none; }
+
+    #chat-header {
+        background: linear-gradient(135deg, #1e2d3d, #1a3a2f);
+        padding: 12px 16px;
+        display: flex; align-items: center; justify-content: space-between;
+        border-bottom: 1px solid #2d3d50;
+        cursor: move;
+        flex-shrink: 0;
+    }
+    #chat-header-left { display: flex; align-items: center; gap: 8px; }
+    #chat-header-left span { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+    .chat-header-dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+    #chat-header-actions { display: flex; gap: 6px; }
+    #chat-expand, #chat-close {
+        background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px;
+        width: 24px; height: 24px; border-radius: 4px;
+        display: flex; align-items: center; justify-content: center;
+    }
+    #chat-expand:hover, #chat-close:hover { background: #2d3d50; color: #e2e8f0; }
+
+    #chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .chat-msg {
+        max-width: 85%;
+        padding: 9px 13px;
+        border-radius: 12px;
+        font-size: 13px;
+        line-height: 1.5;
+        word-break: break-word;
+    }
+    .chat-msg.user {
+        align-self: flex-end;
+        background: linear-gradient(135deg, #eab308, #ca8a04);
+        color: #000;
+        border-bottom-right-radius: 3px;
+        font-weight: 500;
+    }
+    .chat-msg.ai {
+        align-self: flex-start;
+        background-color: #1e2d3d;
+        color: #e2e8f0;
+        border-bottom-left-radius: 3px;
+        border: 1px solid #2d3d50;
+    }
+    .chat-msg.loading { color: #94a3b8; font-style: italic; }
+
+    #chat-input-area {
+        padding: 10px 12px;
+        border-top: 1px solid #1e2d3d;
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+    #chat-input {
+        flex: 1;
+        background-color: #1e2d3d;
+        border: 1px solid #2d3d50;
+        color: #e2e8f0;
+        border-radius: 10px;
+        padding: 8px 12px;
+        font-size: 13px;
+        outline: none;
+    }
+    #chat-input:focus { border-color: #eab308; }
+    #chat-send {
+        background: linear-gradient(135deg, #eab308, #ca8a04);
+        color: #000;
+        border: none;
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    #chat-send:hover { opacity: 0.85; }
+    #chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
+</style>
+
 <button id="chat-toggle" title="Open AI Assistant">🤖</button>
 
 <div id="chat-window" class="hidden">
     <div id="chat-header">
-        <span>🤖 heyToday! Assistant</span>
-        <button id="chat-close">✕</button>
+        <div id="chat-header-left">
+            <div class="chat-header-dot"></div>
+            <span>heyToday! Assistant</span>
+        </div>
+        <div id="chat-header-actions">
+            <button id="chat-expand" title="Expand">⛶</button>
+            <button id="chat-close" title="Close">✕</button>
+        </div>
     </div>
     <div id="chat-messages">
         <div class="chat-msg ai">Hi! I'm your task assistant. Ask me anything about your tasks! 👋</div>
@@ -321,14 +452,84 @@
     const toggle   = document.getElementById('chat-toggle');
     const chatWin  = document.getElementById('chat-window');
     const closeBtn = document.getElementById('chat-close');
+    const expandBtn = document.getElementById('chat-expand');
+    const header   = document.getElementById('chat-header');
     const input    = document.getElementById('chat-input');
     const sendBtn  = document.getElementById('chat-send');
     const messages = document.getElementById('chat-messages');
 
     let conversationHistory = [];
+    let isExpanded = false;
 
+    // Toggle open/close
     toggle.addEventListener('click', () => chatWin.classList.toggle('hidden'));
     closeBtn.addEventListener('click', () => chatWin.classList.add('hidden'));
+
+    // Expand/collapse
+    expandBtn.addEventListener('click', () => {
+        isExpanded = !isExpanded;
+        if (isExpanded) {
+            chatWin.style.width = '520px';
+            chatWin.style.height = '680px';
+            expandBtn.textContent = '⊠';
+        } else {
+            chatWin.style.width = '360px';
+            chatWin.style.height = '500px';
+            expandBtn.textContent = '⛶';
+        }
+    });
+
+    // Draggable toggle button
+    let isDraggingToggle = false, startX, startY, origRight, origBottom;
+    toggle.addEventListener('mousedown', (e) => {
+        isDraggingToggle = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        const rect = toggle.getBoundingClientRect();
+        origRight = window.innerWidth - rect.right;
+        origBottom = window.innerHeight - rect.bottom;
+        e.preventDefault();
+    });
+    document.addEventListener('mousemove', (e) => {
+        if (!isDraggingToggle) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        toggle.style.right = (origRight - dx) + 'px';
+        toggle.style.bottom = (origBottom - dy) + 'px';
+        toggle.style.left = 'auto';
+        toggle.style.top = 'auto';
+    });
+    document.addEventListener('mouseup', (e) => {
+        if (isDraggingToggle) {
+            const dx = Math.abs(e.clientX - startX);
+            const dy = Math.abs(e.clientY - startY);
+            if (dx < 5 && dy < 5) chatWin.classList.toggle('hidden');
+        }
+        isDraggingToggle = false;
+    });
+
+    // Draggable chat window
+    let isDraggingWin = false, winStartX, winStartY, winOrigRight, winOrigBottom;
+    header.addEventListener('mousedown', (e) => {
+        if (e.target === closeBtn || e.target === expandBtn) return;
+        isDraggingWin = true;
+        winStartX = e.clientX;
+        winStartY = e.clientY;
+        const rect = chatWin.getBoundingClientRect();
+        winOrigRight = window.innerWidth - rect.right;
+        winOrigBottom = window.innerHeight - rect.bottom;
+        e.preventDefault();
+    });
+    document.addEventListener('mousemove', (e) => {
+        if (!isDraggingWin) return;
+        const dx = e.clientX - winStartX;
+        const dy = e.clientY - winStartY;
+        chatWin.style.right = (winOrigRight - dx) + 'px';
+        chatWin.style.bottom = (winOrigBottom - dy) + 'px';
+        chatWin.style.left = 'auto';
+        chatWin.style.top = 'auto';
+    });
+    document.addEventListener('mouseup', () => { isDraggingWin = false; });
 
     function addMessage(text, role) {
         const div = document.createElement('div');
