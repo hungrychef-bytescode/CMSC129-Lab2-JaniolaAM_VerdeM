@@ -21,4 +21,14 @@ class Task extends Model
     {
         return $this->belongsTo(TaskList::class, 'list_id');
     }
+
+     public function scopeActive($query)
+    {
+        return $query->whereNull('deleted_at');
+    }
+
+    public function scopeArchived($query)
+    {
+        return $query->onlyTrashed();
+    }
 }

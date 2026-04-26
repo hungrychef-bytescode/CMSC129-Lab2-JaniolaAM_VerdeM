@@ -12,4 +12,19 @@ class TaskList extends Model
     {
         return $this->hasMany(Task::class, 'list_id');
     }
+
+    //archived task
+    public function allTasks()
+    {
+        return $this->hasMany(Task::class, 'list_id')->withTrashed();
+    }
+
+
+    //Get all lists with ALL tasks (active + archived)
+    public static function getAllWithAllTasks()
+    {
+        return self::with(['allTasks' => function ($query) {
+            $query->latest();
+        }])->get();
+    }
 }
