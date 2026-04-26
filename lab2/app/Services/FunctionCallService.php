@@ -20,11 +20,20 @@ class FunctionCallService
             case 'update_task':
                 return $this->updateTask($data);
 
-            case 'delete_task':
-                return $this->prepareDelete($data);
+             case 'delete_task': //soft delete
+                return $this->prepareArchive($data);
 
-            case 'confirm_delete':
-                return $this->confirmDelete();
+            case 'confirm_archive':
+                return $this->confirmArchive();
+
+            case 'restore_task':
+                return $this->restoreTask($data);
+
+            case 'force_delete_task': //hard delete
+                return $this->prepareForceDelete($data);
+
+            case 'confirm_force_delete':
+                return $this->confirmForceDelete();
 
             case 'query_tasks':
                 return $this->queryTasks($data);
@@ -75,39 +84,74 @@ class FunctionCallService
     }
 
     // Prepare delete (soft delete)
-    private function prepareDelete($data)
+    private function prepareArchive($data)
     {
         $task = Task::find($data['id'] ?? null);
 
-        if (!$task) {
-            return "Task not found.";
-        }
+        if (!$task) return "Task not found.";
 
-        session(['pending_delete' => $task->id]);
+        session(['pending_archive' => $task->id]);
 
-        return "Confirm delete '{$task->task}' by typing: confirm delete";
+        return "Confirm archive '{$task->task}' by typing: confirm archive";
     }
 
     //soft delete
-    private function confirmDelete()
+    private function confirmArchive()
     {
-        $id = session('pending_delete');
+        $id = session('pending_archive');
 
-        if (!$id) {
-            return "No pending delete.";
-        }
+        if (!$id) return "No pending archive.";
 
         $task = Task::find($id);
 
         if ($task) {
-            $task->delete();
+            $task->delete(); // soft delete
         }
 
-        session()->forget('pending_delete');
+        session()->forget('pending_archive');
 
         return "Task archived.";
     }
 
+     private function restoreTask($data)
+    {
+        $task = Task::onlyTrashed()->find($data['id'] ?? null);
+
+        if (!$task) return "Archived task not found.";
+
+        $task->restore();
+
+        return "Task restored: {$task->task}";
+    }
+
+    private function prepareForceDelete($data)
+    {
+        $task = Task::withTrashed()->find($data['id'] ?? null);
+
+        if (!$task) return "Task not found.";
+
+        session(['pending_force_delete' => $task->id]);
+
+        return "Confirm permanent delete '{$task->task}' by typing: confirm delete forever";
+    }
+
+    private function confirmForceDelete()
+    {
+        $id = session('pending_force_delete');
+
+        if (!$id) return "No pending delete.";
+
+        $task = Task::withTrashed()->find($id);
+
+        if ($task) {
+            $task->forceDelete(); // permanent delete
+        }
+
+        session()->forget('pending_force_delete');
+
+        return "Task permanently deleted.";
+    }
+    
     /**
      * Query tasks with filters
      */

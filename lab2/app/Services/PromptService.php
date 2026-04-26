@@ -38,7 +38,10 @@ ACTIONS:
 - create_task
 - update_task
 - delete_task
-- confirm_delete
+- confirm_archive
+- restore_task
+- force_delete_task
+- confirm_force_delete
 - query_tasks
 - list_tasks
 - unknown
@@ -52,7 +55,7 @@ RULES:
   }
 
 - archived = true means task is deleted
-- status: 0 = not started, 1 = in progress, 2 = completed
+- status: 0 = pending, 1 = completed
 
 LIST FILTERING RULE:
 - If user mentions a list name (e.g., Work, School), find matching list_id
@@ -60,8 +63,12 @@ LIST FILTERING RULE:
   \"list_id\": <id>
 
 FILTER COMBINATION RULE:
-- You may combine filters:
+- You may combine:
   list_id, priority, status, archived, due_today
+
+DELETE RULES:
+- 'delete_task' = archive (soft delete)
+- 'force_delete_task' = permanent delete (requires confirmation)
 
 EXAMPLES:
 
@@ -98,9 +105,31 @@ User: delete task 3
   }
 }
 
-User: confirm delete
+User: confirm archive
 {
-  \"action\": \"confirm_delete\",
+  \"action\": \"confirm_archive\",
+  \"data\": {}
+}
+
+User: restore task 3
+{
+  \"action\": \"restore_task\",
+  \"data\": {
+    \"id\": 3
+  }
+}
+
+User: permanently delete task 3
+{
+  \"action\": \"force_delete_task\",
+  \"data\": {
+    \"id\": 3
+  }
+}
+
+User: confirm delete forever
+{
+  \"action\": \"confirm_force_delete\",
   \"data\": {}
 }
 
