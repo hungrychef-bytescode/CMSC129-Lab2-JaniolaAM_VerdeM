@@ -3,9 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskListController;
+use App\Http\Controllers\ChatController;
 
 //homepage
 Route::get('/', [TaskController::class, 'index'])->name('tasks.index');
+
+Route::post('/chat', [ChatController::class, 'chat']);
+
 
 //resource routes (CRUD)
 // Route::resource('tasks', TaskController::class);
@@ -27,4 +31,65 @@ Route::delete('tasks/{id}/force', [TaskController::class, 'forceDelete'])->name(
 
 Route::post('lists', [TaskListController::class, 'store'])->name('lists.store');
 Route::delete('lists/{list}', [TaskListController::class, 'destroy'])->name('lists.destroy');
-Route::post('/chat', [App\Http\Controllers\ChatController::class, 'chat'])->name('chat');
+ 
+
+//quick test routes for APIs of ai chatbot
+
+//Groq API models
+Route::get('/test-groq-models', function () {
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . env('GROQ_API_KEY'),
+    ])->get('https://api.groq.com/openai/v1/models');
+
+    return $response->json();
+});
+
+//Groq API working
+Route::get('/test-groq', function () {
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . env('GROQ_API_KEY'),
+        'Content-Type'  => 'application/json',
+    ])->post('https://api.groq.com/openai/v1/chat/completions', [
+        'model' => 'llama-3.3-70b-versatile',
+        'messages' => [
+            ['role' => 'user', 'content' => 'Say hello']
+        ],
+    ]);
+
+    return [
+        'status' => $response->status(),
+        'data' => $response->json()
+    ];
+});
+
+//GEMINI API Models
+Route::get('/test-gemini-models', function () {
+    $apiKey = env('GEMINI_API_KEY');
+
+    $response = Http::get(
+        "https://generativelanguage.googleapis.com/v1beta/models?key={$apiKey}"
+    );
+
+    return $response->json();
+});
+
+//test if gemini is working
+Route::get('/test-gemini', function () {
+
+    $apiKey = env('GEMINI_API_KEY');
+
+    $response = \Illuminate\Support\Facades\Http::post(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}",
+        [
+            "contents" => [
+                [
+                    "parts" => [
+                        ["text" => "Working Gemini"]
+                    ]
+                ]
+            ]
+        ]
+    );
+
+    return $response->json();
+});
