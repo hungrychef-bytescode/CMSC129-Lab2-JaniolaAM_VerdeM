@@ -24,10 +24,15 @@ class PromptService
             ];
         });
 
+        $historyText = json_encode($history);
+
         return "
 You are an AI Task Assistant.
 
-Return ONLY JSON.
+You MUST return ONLY valid JSON.
+Do NOT include explanations.
+Do NOT wrap in markdown.
+Do NOT use ```json.
 
 ACTIONS:
 - create_task
@@ -36,12 +41,37 @@ ACTIONS:
 - confirm_delete
 - query_tasks
 - list_tasks
+- unknown
 
 RULES:
-- ALWAYS JSON
+- ALWAYS return valid JSON
+- If unsure, return:
+  {
+    \"action\": \"unknown\",
+    \"data\": {}
+  }
+
 - archived = true means task is deleted
+- status: 0 = not started, 1 = in progress, 2 = completed
+
+LIST FILTERING RULE:
+- If user mentions a list name (e.g., Work, School), find matching list_id
+- Include it in:
+  \"list_id\": <id>
+
+FILTER COMBINATION RULE:
+- You may combine filters:
+  list_id, priority, status, archived, due_today
 
 EXAMPLES:
+
+User: show tasks in Work
+{
+  \"action\": \"query_tasks\",
+  \"data\": {
+    \"list_id\": 1
+  }
+}
 
 User: show archived tasks
 {
@@ -50,6 +80,32 @@ User: show archived tasks
     \"archived\": true
   }
 }
+
+User: show high priority tasks in School
+{
+  \"action\": \"query_tasks\",
+  \"data\": {
+    \"list_id\": 2,
+    \"priority\": \"High\"
+  }
+}
+
+User: delete task 3
+{
+  \"action\": \"delete_task\",
+  \"data\": {
+    \"id\": 3
+  }
+}
+
+User: confirm delete
+{
+  \"action\": \"confirm_delete\",
+  \"data\": {}
+}
+
+CONTEXT (previous messages):
+$historyText
 
 CURRENT DATA:
 " . json_encode($lists) . "

@@ -33,10 +33,11 @@ class FunctionCallService
                 return $this->listTasks();
 
             default:
-                return "I didn’t understand.";
+                return "I did not understand the request.";
         }
     }
 
+    //create task
     private function createTask($data)
     {
         $list = TaskList::first();
@@ -59,33 +60,42 @@ class FunctionCallService
         return "Created task: {$task->task} (List: {$list->name})";
     }
 
+    //update task
     private function updateTask($data)
     {
         $task = Task::find($data['id'] ?? null);
 
-        if (!$task) return "Task not found.";
+        if (!$task) {
+            return "Task not found.";
+        }
 
         $task->update($data);
 
         return "Updated task: {$task->task}";
     }
 
+    // Prepare delete (soft delete)
     private function prepareDelete($data)
     {
         $task = Task::find($data['id'] ?? null);
 
-        if (!$task) return "Task not found.";
+        if (!$task) {
+            return "Task not found.";
+        }
 
         session(['pending_delete' => $task->id]);
 
         return "Confirm delete '{$task->task}' by typing: confirm delete";
     }
 
+    //soft delete
     private function confirmDelete()
     {
         $id = session('pending_delete');
 
-        if (!$id) return "No pending delete.";
+        if (!$id) {
+            return "No pending delete.";
+        }
 
         $task = Task::find($id);
 
@@ -95,33 +105,54 @@ class FunctionCallService
 
         session()->forget('pending_delete');
 
-        return "Task deleted!";
+        return "Task archived.";
     }
 
+    /**
+     * Query tasks with filters
+     */
     private function queryTasks($data)
     {
         $query = Task::query();
 
+        // Include archived tasks if requested
+        if (!empty($data['archived'])) {
+            $query->onlyTrashed();
+        }
+
+        // Filter by list
+        if (isset($data['list_id'])) {
+            $query->where('list_id', $data['list_id']);
+        }
+
+        // Filter by priority
         if (isset($data['priority'])) {
             $query->where('priority', $data['priority']);
         }
 
+        // Filter by status
         if (isset($data['status'])) {
             $query->where('status', $data['status']);
         }
 
+        // Filter due today
         if (!empty($data['due_today'])) {
             $query->whereDate('due_date', now());
         }
 
         $tasks = $query->get();
 
-        if ($tasks->isEmpty()) return "No tasks found.";
+        if ($tasks->isEmpty()) {
+            return "No tasks found.";
+        }
 
         $output = "Tasks:\n";
 
         foreach ($tasks as $task) {
-            $output .= "#{$task->id} {$task->task} ({$task->priority})\n";
+            $state = $task->deleted_at ? "Archived" : "Active";
+            $status = $task->status ? "Done" : "Pending";
+
+            $output .= "#{$task->id} {$task->task} ({$task->priority}) - {$status} - {$state}\n";
         }
 
         return $output;
